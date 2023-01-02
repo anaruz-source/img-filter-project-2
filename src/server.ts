@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { query } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
@@ -31,6 +31,50 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   //! END @TODO1
   
+
+
+  // @TODO01 SOLUTION
+
+  app.get('/filteredimage', async (req, res)=>{
+
+    let {image_url} = req.query
+
+    if(!image_url) return res.status(422).send('Empty Get Parameter image_url')
+
+    image_url = image_url.toString()
+
+    let filteredPath : string = ''
+    
+    try {
+
+   // Url shoud be valid, containing either http or https protocol, image file with jpg extension should be there
+   // in this case no support for jpeg and no casesentitive handling too.
+   
+          const isNotValid = (image_url.slice(0,4) !== 'http' && image_url.slice(0,5) !== 'https') || image_url.slice(-3) !== 'jpg'
+          
+          if(isNotValid) return res.status(422).send('Unvalid Get Parameter image_url (no http|s or jpg file')
+
+
+           filteredPath = await filterImageFromURL(image_url)
+
+
+          res.status(200).sendFile(filteredPath)
+
+          setTimeout(() => deleteLocalFiles([filteredPath]), 10000) // delete local file after 10 secs
+
+          
+      
+    } catch (error) {
+
+          console.log(error)
+        
+          res.status(500).send('Server Processing Image Error')
+    } 
+    
+  })
+
+  // ENDO @TODO01 SOLUTION
+
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async ( req, res ) => {

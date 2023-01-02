@@ -1,6 +1,6 @@
 import fs from "fs";
-import Jimp = require("jimp");
-
+import Jimp from "jimp";
+import axios from 'axios'
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
 // returns the absolute path to the local image
@@ -11,14 +11,26 @@ import Jimp = require("jimp");
 export async function filterImageFromURL(inputURL: string): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
-      const photo = await Jimp.read(inputURL);
-      const outpath =
-        "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
-      await photo
+
+      // Got error : Could not find MIME for buffer (null)
+      // for larger images then I found a solution here
+      // https://github.com/oliver-moran/jimp/issues/775#issuecomment-521938738
+      //tweacked it from promised to async await call
+
+     const {data: imageBuffer} = await axios({
+        method: 'get',
+        url: inputURL,
+        responseType: 'arraybuffer'
+      })
+      const photo = await Jimp.read(imageBuffer);
+   
+      const outpath = "/tmp/filtered." + Math.floor(Math.random() * 2000) +'.jpg';
+      
+      photo
         .resize(256, 256) // resize
         .quality(60) // set JPEG quality
         .greyscale() // set greyscale
-        .write(__dirname + outpath, (img) => {
+        .write(__dirname + outpath, (err: Error) => {
           resolve(__dirname + outpath);
         });
     } catch (error) {
