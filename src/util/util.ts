@@ -9,7 +9,7 @@ import axios from 'axios'
 // RETURNS
 //    an absolute path to a filtered image locally saved file
 export async function filterImageFromURL(inputURL: string): Promise<string> {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve:Function, reject:Function) => {
     try {
 
       // Got error : Could not find MIME for buffer (null)
