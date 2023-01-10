@@ -37,14 +37,10 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   app.get('/filteredimage', async (req, res)=>{
 
-    let {image_url} = req.query
-
+    let {image_url} = req.query as string
     if(!image_url) return res.status(422).send('Empty Get Parameter image_url')
 
-    image_url = image_url.toString()
-
-    let filteredPath : string = ''
-    
+      
     try {
 
    // Url shoud be valid, containing either http or https protocol, image file with jpg extension should be there
@@ -52,17 +48,14 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
    
           const isNotValid = (image_url.slice(0,4) !== 'http' && image_url.slice(0,5) !== 'https') || image_url.slice(-3) !== 'jpg'
           
-          if(isNotValid) return res.status(422).send('Unvalid Get Parameter image_url (no http|s or jpg file')
+          if(isNotValid) return res.status(422).send('Unvalid Get Parameter image_url (no http|s or jpg file') // YOU NEED to add support to other image's types like PNG, svg, etc...
 
-
-           filteredPath = await filterImageFromURL(image_url)
-
+          const filteredPath = await filterImageFromURL(image_url)
 
           res.status(200).sendFile(filteredPath)
-
-          setTimeout(() => deleteLocalFiles([filteredPath]), 10000) // delete local file after 10 secs
-
-          
+          res.on('finish', () => {
+            deleteLocalFiles([filteredPath])
+          })          
       
     } catch (error) {
 
